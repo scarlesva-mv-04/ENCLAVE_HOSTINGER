@@ -1,11 +1,6 @@
 <?php
 /*SEGURIDAD*/
-
-if ($_SERVER["HTTP_HOST"] === "enclave.com") {
-    define("DIR_SERV", "http://www.enclave.com/ENCLAVE_API");
-} else {
-    define("DIR_SERV", "http://www.enclave.com/ENCLAVE_API");
-}
+define("DIR_SERV", "https://lightseagreen-swallow-488848.hostingersite.com/ENCLAVE_API");
 
 /**/
 define("MINUTOS",15);

@@ -2,10 +2,6 @@
 /*SEGURIDAD*/
 define("DIR_SERV", "https://lightseagreen-swallow-488848.hostingersite.com/ENCLAVE_API");
 
-
-
-
-
 /**/
 define("MINUTOS",15);
 

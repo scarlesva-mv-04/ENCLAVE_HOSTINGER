@@ -8,10 +8,9 @@ require 'Firebase/autoload.php';
 define("PASSWORD_API", "Una_clave_para_usar_para_encriptar");
 define("MINUTOS_API", 60);
 define("SERVIDOR_BD", "localhost");
-define("USUARIO_BD", "jose");
-define("CLAVE_BD", "josefa");
-define("NOMBRE_BD", "enclave");
-
+define("USUARIO_BD", "u598697057_enclave");
+define("CLAVE_BD", "Enclave2025");
+define("NOMBRE_BD", "u598697057_enclave");
 
 function validateToken()
 {

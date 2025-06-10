@@ -51,6 +51,29 @@ $app->get('/cliente/{id}', function ($request, $response, $args) {
 });
 
 
+$app->put('/cliente/{id}/{tupla}/{valor}', function ($request, $response, $args) {
+    $test = validateToken();
+
+    if (!is_array($test)) {
+        echo json_encode(["no_auth" => "No tienes permiso para usar el servicio"]);
+        return;
+    }
+
+    if (!isset($test["cliente"])) {
+        echo json_encode($test); // puede ser un error o mensaje_baneo
+        return;
+    }
+
+    $id_cliente = $args['id'];
+
+    if (!isAuthorized($id_cliente, $test)) {
+        echo json_encode(["no_auth" => "No tienes permiso para acceder a este recurso"]);
+        return;
+    }
+
+    echo json_encode( actualizar_dato_cliente($id_cliente, $args['tupla'], $args['valor']));
+});
+
 /*------------------------------------------------------------------------------------------------------------------------------------------------------*/
 
 
@@ -115,7 +138,6 @@ $app->get('/property/{id}', function ($request, $response, $args) {
 
 
 /* CALENDARIO TEST */
-
 $app->post('/citas', function ($request) {
     $datos_cita[] = $request->getParam("name");
     $datos_cita[] = $request->getParam("surname");
@@ -195,8 +217,11 @@ $app->get('/property/{id}/modules/seguridad', function ($request, $response, $ar
     echo json_encode($resultado);
 });
 
-// Añadir usuario temporal o autorizado a una propiedad
-$app->post('/property/{id}/user', function ($request, $response, $args) {
+
+
+/*MODULOS DINAMICOS*/
+
+$app->get('/module/{id}', function ($request, $response, $args) {
     $test = validateToken();
 
     if (!is_array($test)) {
@@ -204,35 +229,23 @@ $app->post('/property/{id}/user', function ($request, $response, $args) {
         return;
     }
 
-    if (!isset($test["cliente"]) || $test["cliente"]["tipo"] !== "administrador") {
-        echo json_encode(["no_auth" => "Sólo administradores pueden realizar esta acción"]);
+    if (!isset($test["cliente"])) {
+        echo json_encode($test);
         return;
     }
 
-    $id_propiedad = $args['id'];
     $id_cliente = $test["cliente"]["id"];
+    $id_modulo = $args['id'];
 
-    if (!propiedadPerteneceACliente($id_propiedad, $id_cliente)) {
-        echo json_encode(["no_auth" => "No tienes permiso para acceder a esta propiedad"]);
+    if (!isAuthorizedModulo($id_modulo, $id_cliente)) {
+        echo json_encode(["no_auth" => "No tienes permiso para acceder a este recurso"]);
         return;
     }
 
-    $data = $request->getParsedBody();
-    foreach (["nombre","apellidos","dni","genero","usuario","clave","tipo"] as $f) {
-        if (empty($data[$f])) {
-            echo json_encode(["error" => "Falta el campo: $f"]);
-            return;
-        }
-    }
-
-    if (!in_array($data["tipo"], ["autorizado","temporal"])) {
-        echo json_encode(["error" => "Tipo inválido"]);
-        return;
-    }
-
-    $resultado = agregar_usuario_propiedad($id_propiedad, $data);
+    $resultado = obtener_modulo_por_id($id_modulo);
     echo json_encode($resultado);
 });
+
 
 
 

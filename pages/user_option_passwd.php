@@ -1,11 +1,83 @@
-<?php 
+<?php
 if (!isset($_SESSION["token"])) {
     header("Location:/");
+    exit;
+}
+
+$mensaje = "";
+
+$headers[] = "Authorization: Bearer " . $_SESSION["token"];
+$url = DIR_SERV . "/cliente/" . $_SESSION["user_id"];
+
+$respuesta = consumir_servicios_JWT_REST($url, "GET", $headers);
+$json_respuesta = json_decode($respuesta, true);
+
+if (!is_array($json_respuesta)) {
+    $mensaje = "Error consumiendo el servicio REST: respuesta inesperada.";
+} elseif (isset($json_respuesta["error"])) {
+    $mensaje = $json_respuesta["error"];
+} elseif (isset($json_respuesta["no_auth"])) {
+    session_unset();
+    $_SESSION["mensaje_seguridad"] = "El tiempo de sesión de la API ha expirado o no tiene permisos";
+    header("Location:index.php");
+    exit;
+} elseif (isset($json_respuesta["mensaje_baneo"])) {
+    session_unset();
+    $_SESSION["mensaje_seguridad"] = "Usted ya no se encuentra registrado en la BD";
+    header("Location:index.php");
+    exit;
+} else {
+    $cliente = $json_respuesta["cliente"];
+}
+
+if (isset($_POST["submit"])) {
+    // Validaciones
+    if (
+        empty($_POST["actual_passwd"]) ||
+        empty($_POST["new_passwd"]) ||
+        empty($_POST["repeat_new_passwd"])
+    ) {
+        $mensaje = "Todos los campos son obligatorios.";
+    } elseif ($_POST["new_passwd"] !== $_POST["repeat_new_passwd"]) {
+        $mensaje = "Las contraseñas nuevas no coinciden.";
+    } elseif (md5($_POST["actual_passwd"]) !== $cliente["clave"]) {
+        $mensaje = "La contraseña actual es incorrecta.";
+    } elseif (md5($_POST["new_passwd"]) === $cliente["clave"]) {
+        $mensaje = "La nueva contraseña no puede ser igual a la actual.";
+    } else {
+        // Todo OK, procesar cambio
+        $headers[] = "Authorization: Bearer " . $_SESSION["token"];
+        $url = DIR_SERV . "/cliente/" . $_SESSION["user_id"] . "/clave/" . md5($_POST["new_passwd"]);
+
+        $respuesta = consumir_servicios_JWT_REST($url, "put", $headers);
+        $json_respuesta = json_decode($respuesta, true);
+
+        if (!is_array($json_respuesta)) {
+            $mensaje = "Error en la respuesta del servidor al cambiar la contraseña.";
+        } elseif (isset($json_respuesta["error"])) {
+            $mensaje = $json_respuesta["error"];
+        } elseif (isset($json_respuesta["no_auth"])) {
+            session_unset();
+            $_SESSION["mensaje_seguridad"] = "El tiempo de sesión de la API ha expirado o no tiene permisos";
+            header("Location:index.php");
+            exit;
+        } elseif (isset($json_respuesta["mensaje_baneo"])) {
+            session_unset();
+            $_SESSION["mensaje_seguridad"] = "Usted ya no se encuentra registrado en la BD";
+            header("Location:index.php");
+            exit;
+        } else {
+            $mensaje = $json_respuesta["mensaje"] ?? "Contraseña actualizada correctamente.";
+        }
+    }
 }
 ?>
 
+
+<!DOCTYPE html>
+
 <body>
-    <main class="success">
+    <main class="user_options">
         <div class="info">
             <span>
                 <svg width="268" height="47" viewBox="0 0 268 67" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -17,18 +89,39 @@ if (!isset($_SESSION["token"])) {
                         fill="#C8BA9B" />
                 </svg>
             </span>
+            <span class="subtitles">
+                Cambio de contraseña
+            </span>
         </div>
         <div class="user-info">
             <div class="rounded-img">
-                <svg width="128" height="128" viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M37.3334 64L58.6667 80L85.3334 42.6667M64.0001 117.333C93.4561 117.333 117.333 93.456 117.333 64C117.333 34.544 93.4561 10.6667 64.0001 10.6667C34.5441 10.6667 10.6667 34.544 10.6667 64C10.6667 93.456 34.5441 117.333 64.0001 117.333Z" stroke="#4EB54B" stroke-width="2"/>
-                </svg>                                          
+                <picture>
+                    <img src="images/photos/<?php echo htmlspecialchars($cliente['profile-pic']); ?>" alt="profile-pic">
+                </picture>
             </div>
-            <p class="subtitles">Se ha añadido el hogar correctamente.</p>
-            <p class="text resaltar">Será redirigida a sus propiedades</p>
+            <p class="subtitles">
+                <?php
+                echo htmlspecialchars(ucfirst($cliente["nombre"])) . " " . htmlspecialchars(ucfirst($cliente["apellidos"]));
+                ?>
+            </p>
         </div>
-        <script>redirigirAutomaticamente("properties.php",1500)</script>
+        <?php
+        if (!empty($mensaje)) {
+            echo "<p class='error-msg'>" . htmlspecialchars($mensaje) . "</p>";
+        }
+        ?>
+        <form method="post" action="">
+            <div class="input-txt actual-passwd">
+                <input type="password" name="actual_passwd" placeholder="Introduce tu contraseña actual">
+            </div>
+            <div class="input-txt new-passwd">
+                <input type="password" name="new_passwd" placeholder="Introduce tu nueva contraseña">
+                <input type="password" name="repeat_new_passwd" placeholder="Repite la nueva contraseña">
+
+            </div>
+            <button class="normal txt-botones" type="submit" name="submit">Guardar</button>
+            <button class="txt-botones" onclick="history.back();">Volver</button>
+        </form>
+
     </main>
 </body>
-
-</html>

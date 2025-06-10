@@ -1,3 +1,9 @@
+<?php 
+if (!isset($_SESSION["token"])) {
+    header("Location:/");
+}
+?>
+
 <body>
     <main class="add_house">
         <div class="header-dummy"></div>

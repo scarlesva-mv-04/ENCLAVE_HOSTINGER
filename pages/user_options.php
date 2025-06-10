@@ -36,7 +36,8 @@ if (isset($json_respuesta["mensaje_baneo"])) {
 }
 
 $cliente = $json_respuesta["cliente"];
-var_dump($cliente);
+$_SESSION["id_cliente"]=$cliente["id"];
+
 ?>
 
 <!DOCTYPE html>
@@ -71,7 +72,7 @@ var_dump($cliente);
             </p>
         </div>
         <div id="opciones">
-            <a id="option1" class="input-txt">
+            <a id="option1" class="input-txt" href="/user_option_passwd">
                 <div>
                     <span class="resaltar txt-input">Cambiar mi contraseña</span>
                 </div>
@@ -83,7 +84,7 @@ var_dump($cliente);
                     </svg>
                 </div>
             </a>
-            <a id="option2" class="input-txt">
+            <a id="option2" class="input-txt"  href="/user_option_username">
                 <div>
                     <span class="resaltar txt-input">Modificar nombre de usuario</span>
                 </div>
@@ -95,7 +96,7 @@ var_dump($cliente);
                     </svg>
                 </div>
             </a>
-            <a id="option3" class="input-txt">
+            <a id="option3" class="input-txt"  href="/user_option_profile_pic">
                 <div>
                     <span class="resaltar txt-input">Modificar mi foto de perfil</span>
                 </div>
@@ -107,7 +108,7 @@ var_dump($cliente);
                     </svg>
                 </div>
             </a>
-            <a id="option4" class="input-txt">
+            <a id="option4" class="input-txt"  href="/user_option_gender">
                 <div>
                     <span class="resaltar txt-input">Modificar preferencia de género</span>
                 </div>
@@ -119,9 +120,9 @@ var_dump($cliente);
                     </svg>
                 </div>
             </a>
-            <a id="option5" class="input-txt">
+            <a id="option5" class="input-txt"  href="/user_option_name">
                 <div>
-                    <span class="resaltar txt-input">Modificar mi nombre</span>
+                    <span class="resaltar txt-input ">Modificar mi nombre</span>
                 </div>
                 <div>
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -131,7 +132,7 @@ var_dump($cliente);
                     </svg>
                 </div>
             </a>
-            <a id="option6" class="input-txt">
+            <a id="option6" class="input-txt"  href="/user_option_surname">
                 <div>
                     <span class="resaltar txt-input">Modificar mis apellidos</span>
                 </div>

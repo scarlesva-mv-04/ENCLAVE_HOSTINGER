@@ -1,11 +1,48 @@
-<?php 
+<?php
+
 if (!isset($_SESSION["token"])) {
     header("Location:/");
 }
+
+
+$headers[] = "Authorization: Bearer " . $_SESSION["token"];
+$url = DIR_SERV . "/cliente/" . $_SESSION["user_id"];
+
+$respuesta = consumir_servicios_JWT_REST($url, "GET", $headers);
+$json_respuesta = json_decode($respuesta, true);
+
+if (!$json_respuesta) {
+    session_destroy();
+    die(error_page("Gestión Libros", "<h1>ENCLAVE</h1><p>Error consumiendo el servicio REST: <strong>$url</strong></p>"));
+}
+
+if (isset($json_respuesta["error"])) {
+    session_destroy();
+    die(error_page("Gestión Libros", "<h1>ENCLAVE</h1><p>" . $json_respuesta["error"] . "</p>"));
+}
+
+if (isset($json_respuesta["no_auth"])) {
+    session_unset();
+    $_SESSION["mensaje_seguridad"] = "El tiempo de sesión de la API ha expirado o no tiene permisos";
+    header("Location:index.php");
+    exit;
+}
+
+if (isset($json_respuesta["mensaje_baneo"])) {
+    session_unset();
+    $_SESSION["mensaje_seguridad"] = "Usted ya no se encuentra registrado en la BD";
+    header("Location:index.php");
+    exit;
+}
+
+$cliente = $json_respuesta["cliente"];
+
 ?>
 
+<!DOCTYPE html>
+
 <body>
-    <main class="success">
+    <main class="user_options">
         <div class="info">
             <span>
                 <svg width="268" height="47" viewBox="0 0 268 67" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -17,18 +54,37 @@ if (!isset($_SESSION["token"])) {
                         fill="#C8BA9B" />
                 </svg>
             </span>
+            <span class="subtitles">
+                Cambio de apellidos
+            </span>
         </div>
         <div class="user-info">
             <div class="rounded-img">
-                <svg width="128" height="128" viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M37.3334 64L58.6667 80L85.3334 42.6667M64.0001 117.333C93.4561 117.333 117.333 93.456 117.333 64C117.333 34.544 93.4561 10.6667 64.0001 10.6667C34.5441 10.6667 10.6667 34.544 10.6667 64C10.6667 93.456 34.5441 117.333 64.0001 117.333Z" stroke="#4EB54B" stroke-width="2"/>
-                </svg>                                          
+                <picture>
+                    <img src="images/photos/<?php echo htmlspecialchars($cliente['profile-pic']); ?>" alt="profile-pic">
+                </picture>
             </div>
-            <p class="subtitles">Se ha añadido el hogar correctamente.</p>
-            <p class="text resaltar">Será redirigida a sus propiedades</p>
+            <p class="subtitles">
+                <?php
+                echo htmlspecialchars(ucfirst($cliente["nombre"])) . " " . htmlspecialchars(ucfirst($cliente["apellidos"]));
+                ?>
+            </p>
         </div>
-        <script>redirigirAutomaticamente("properties.php",1500)</script>
+        <div id="opciones">
+            <a id="option6" class="input-txt">
+                <div>
+                    <span class="resaltar txt-input">Modificar mis apellidos</span>
+                </div>
+                <div>
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M4 8H13M17 8H20M11 16H20M4 16H7" stroke="#01222F" stroke-linecap="round" stroke-linejoin="round" />
+                        <path d="M9 18C10.1046 18 11 17.1046 11 16C11 14.8954 10.1046 14 9 14C7.89543 14 7 14.8954 7 16C7 17.1046 7.89543 18 9 18Z" stroke="#01222F" />
+                        <path d="M15 10C16.1046 10 17 9.10457 17 8C17 6.89543 16.1046 6 15 6C13.8954 6 13 6.89543 13 8C13 9.10457 13.8954 10 15 10Z" stroke="#01222F" />
+                    </svg>
+                </div>
+            </a>
+        </div>
+        <button class="txt-botones" onclick="window.location.href='#';">Guardar</button>
+        <button class="txt-botones" onclick="history.back();">Volver</button>
     </main>
 </body>
-
-</html>

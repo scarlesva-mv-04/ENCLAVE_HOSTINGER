@@ -2,7 +2,6 @@
 <html lang="en">
 <body>
     <main class="testimonials">
-        <div class="header-dummy"></div>
         <div class="cover">
             <div class="content">
                 <p class="subtitles"> Solo Enclave puede lograr el equilibrio perfecto entre confort y seguridad.</p>
@@ -169,7 +168,7 @@
                     inmediata,
                     cómoda y sencilla.
                 </p>
-                <button class="normal txt-botones" onclick="window.location.href = 'cita.html'">Agencia una
+                <button class="normal txt-botones" onclick="window.location.href = '/cita'">Agencia una
                     cita</button>
                 </div>
         </section>

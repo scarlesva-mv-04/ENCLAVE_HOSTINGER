@@ -254,7 +254,7 @@ $(function () {
 
         // Si es válido, redirigir
         if (isValid) {
-            window.location.href = "add_home_successful.html"; // Redirigir después de la validación
+            window.location.href = "/add_home_successful"; // Redirigir después de la validación
         }
     });
 });

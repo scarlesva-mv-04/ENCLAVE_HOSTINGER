@@ -1,6 +1,11 @@
 <?php
 /*SEGURIDAD*/
-define("DIR_SERV", "https://lightseagreen-swallow-488848.hostingersite.com/ENCLAVE_API");
+
+if ($_SERVER["HTTP_HOST"] === "enclave.com") {
+    define("DIR_SERV", "http://www.enclave.com/ENCLAVE_API");
+} else {
+    define("DIR_SERV", "http://www.enclave.com/ENCLAVE_API");
+}
 
 /**/
 define("MINUTOS",15);
@@ -43,6 +48,25 @@ function error_page($title, $body)
    </head>
    <body>'.$body.'</body>
    </html>';
+}
+
+function consumir_servicios_JWT_REST_CON_ARCHIVO($url, $metodo, $headers, $datos, $campo_archivo, $ruta_tmp_archivo, $nombre_original)
+{
+    $llamada = curl_init();
+    curl_setopt($llamada, CURLOPT_URL, $url);
+    curl_setopt($llamada, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($llamada, CURLOPT_CUSTOMREQUEST, $metodo);
+
+    $archivo = new CURLFile($ruta_tmp_archivo, mime_content_type($ruta_tmp_archivo), $nombre_original);
+    $datos[$campo_archivo] = $archivo;
+
+    $headers[] = "Content-Type: multipart/form-data";
+    curl_setopt($llamada, CURLOPT_HTTPHEADER, $headers);
+    curl_setopt($llamada, CURLOPT_POSTFIELDS, $datos);
+
+    $respuesta = curl_exec($llamada);
+    curl_close($llamada);
+    return $respuesta;
 }
 
 

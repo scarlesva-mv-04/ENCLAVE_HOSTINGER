@@ -1,5 +1,5 @@
 /* PARA CONEXIONES A LA API */
-const API_BASE = "https://lightseagreen-swallow-488848.hostingersite.com/ENCLAVE_API";
+const API_BASE = "http://www.enclave.com/ENCLAVE_API";
 
 /*----------------------------    FUNCION CAMBIAR HEADER    --------------------------*/
 
@@ -15,7 +15,6 @@ $(document).ready(function () {
                     <nav>
                         <ul>
                             <li><a href="/cita" class='txt-botones'>Agencia una cita</a></li>
-                            <li><a href="/blog" class='txt-botones'>Blog</a></li>
                             <li><a href="/testimonials">Testimonials</a></li>
                             <li class="logo">
                                 <a href="/"><img src="../images/icons/Enclave_logo.svg" alt="Enclave Logo"></a>
@@ -305,7 +304,7 @@ $(document).ready(function () {
         $("#appointment_time").removeClass("error");
     });
 
-    $("form").submit(function (e) {
+    $("form#cita").submit(function (e) {
         e.preventDefault();
         let isValid = true;
 
@@ -443,6 +442,15 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 });
+
+document.querySelectorAll('.clickable-module').forEach(function (div) {
+    div.addEventListener('click', function () {
+        document.getElementById('modulo_id').value = this.dataset.id;
+        document.getElementById('moduloForm').submit();
+    });
+});
+
+
 
 
 

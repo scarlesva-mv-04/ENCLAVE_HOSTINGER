@@ -8,9 +8,10 @@ require 'Firebase/autoload.php';
 define("PASSWORD_API", "Una_clave_para_usar_para_encriptar");
 define("MINUTOS_API", 60);
 define("SERVIDOR_BD", "localhost");
-define("USUARIO_BD", "u598697057_enclave");
-define("CLAVE_BD", "Enclave2025");
-define("NOMBRE_BD", "u598697057_enclave");
+define("USUARIO_BD", "jose");
+define("CLAVE_BD", "josefa");
+define("NOMBRE_BD", "enclave");
+
 
 function validateToken()
 {
@@ -159,6 +160,36 @@ function obtener_cliente_por_id($id)
     $conexion = null;
     return $respuesta;
 }
+
+/*-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
+
+/*obtener cliente*/
+
+function actualizar_dato_cliente($id, $tupla, $valor)
+{
+    try {
+        $conexion = new PDO("mysql:host=" . SERVIDOR_BD . ";dbname=" . NOMBRE_BD, USUARIO_BD, CLAVE_BD, array(PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES 'utf8'"));
+    } catch (PDOException $e) {
+        $respuesta["error"] = "No he podido conectarme a la base de datos: " . $e->getMessage();
+        return $respuesta;
+    }
+
+    try {
+        $consulta = "UPDATE clientes SET $tupla=? WHERE id=?";
+        $sentencia = $conexion->prepare($consulta);
+        $sentencia->execute([$valor, $id]);
+    } catch (PDOException $e) {
+        $sentencia = null;
+        $conexion = null;
+        $respuesta["error"] = "No he podido realizar la consulta: " . $e->getMessage();
+        return $respuesta;
+    }
+
+    $sentencia = null;
+    $conexion = null;
+    return $respuesta["mensaje"]="$tupla actualizado/a correctamente";
+}
+
 
 /*-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
 
@@ -369,6 +400,7 @@ function obtener_modulos_confort_por_propiedad($id_propiedad)
 {
     try {
         $conexion = new PDO("mysql:host=" . SERVIDOR_BD . ";dbname=" . NOMBRE_BD, USUARIO_BD, CLAVE_BD, array(PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES 'utf8'"));
+        $conexion->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
     } catch (PDOException $e) {
         return ["error" => "No se pudo conectar a la base de datos: " . $e->getMessage()];
     }
@@ -407,6 +439,7 @@ function obtener_modulos_seguridad_por_propiedad($id_propiedad)
 {
     try {
         $conexion = new PDO("mysql:host=" . SERVIDOR_BD . ";dbname=" . NOMBRE_BD, USUARIO_BD, CLAVE_BD, array(PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES 'utf8'"));
+        $conexion->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
     } catch (PDOException $e) {
         return ["error" => "No se pudo conectar a la base de datos: " . $e->getMessage()];
     }
@@ -441,48 +474,88 @@ function obtener_modulos_seguridad_por_propiedad($id_propiedad)
     }
 }
 
-function agregar_usuario_propiedad($id_propiedad, $data)
+
+/*MODULOS DINAMICOS*/
+
+function isAuthorizedModulo($id_modulo, $id_cliente)
 {
     try {
         $conexion = new PDO(
-            "mysql:host=".SERVIDOR_BD.";dbname=".NOMBRE_BD,
+            "mysql:host=" . SERVIDOR_BD . ";dbname=" . NOMBRE_BD,
             USUARIO_BD,
             CLAVE_BD,
-            [PDO::MYSQL_ATTR_INIT_COMMAND=>"SET NAMES 'utf8'"]
+            array(PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES 'utf8'")
         );
+        $conexion->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+
+        $query = "
+            SELECT 1
+            FROM modulos m
+            JOIN sistemas_enclave se ON m.id_sist_enclave = se.id
+            JOIN propiedades p ON se.id_propiedad = p.id
+            JOIN propiedad_cliente pc ON p.id = pc.id_propiedad
+            WHERE m.id = ? AND pc.id_cliente = ?
+        ";
+        $stmt = $conexion->prepare($query);
+        $stmt->execute([$id_modulo, $id_cliente]);
+
+        return $stmt->fetchColumn() ? true : false;
+
     } catch (PDOException $e) {
-        return ["error"=>"No se pudo conectar: ".$e->getMessage()];
+        return false;
     }
+}
+
+
+function obtener_modulo_por_id($id_modulo)
+{
+    $tabla_por_categoria = [
+        1 => 'iluminacion_rgb',
+        2 => 'climatizacion',
+        3 => 'temperatura_agua',
+        4 => 'camara',
+        5 => 'sensor_movimiento',
+        6 => 'cerradura'
+    ];
 
     try {
-        $conexion->beginTransaction();
+        $conexion = new PDO(
+            "mysql:host=" . SERVIDOR_BD . ";dbname=" . NOMBRE_BD,
+            USUARIO_BD,
+            CLAVE_BD,
+            array(PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES 'utf8'")
+        );
+        $conexion->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
-        $hash = password_hash($data["clave"], PASSWORD_BCRYPT);
+        // Paso 1: obtener el módulo base
+        $stmt = $conexion->prepare("SELECT * FROM modulos WHERE id = ?");
+        $stmt->execute([$id_modulo]);
+        $modulo = $stmt->fetch(PDO::FETCH_ASSOC);
 
-        $sql = "INSERT INTO clientes
-            (nombre,apellidos,dni,genero,usuario,clave,`tipo`)
-            VALUES (?,?,?,?,?,?,?)";
-        $stmt = $conexion->prepare($sql);
-        $stmt->execute([
-            $data["nombre"],
-            $data["apellidos"],
-            $data["dni"],
-            $data["genero"],
-            $data["usuario"],
-            $hash,
-            $data["tipo"]
-        ]);
-        $id_nuevo = $conexion->lastInsertId();
+        if (!$modulo) {
+            return ["mensaje" => "No se encontró el módulo"];
+        }
 
-        $sql2 = "INSERT INTO propiedad_cliente (id_cliente,id_propiedad) VALUES (?,?)";
-        $stmt2 = $conexion->prepare($sql2);
-        $stmt2->execute([$id_nuevo, $id_propiedad]);
+        $categoria_id = $modulo["id_categoria"];
+        if (!isset($tabla_por_categoria[$categoria_id])) {
+            return ["error" => "Categoría de módulo desconocida"];
+        }
 
-        $conexion->commit();
+        $tabla = $tabla_por_categoria[$categoria_id];
 
-        return ["success"=>true,"message"=>"Usuario agregado","id_usuario"=>(int)$id_nuevo];
+        // Paso 2: obtener los datos específicos
+        $stmt = $conexion->prepare("SELECT * FROM $tabla WHERE id_modulo = ?");
+        $stmt->execute([$id_modulo]);
+        $datos_especificos = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if (!$datos_especificos) {
+            return ["error" => "No se encontraron datos específicos para el módulo"];
+        }
+
+        // Combinar ambos arrays
+        return ["modulo" => array_merge($modulo, $datos_especificos)];
+
     } catch (PDOException $e) {
-        $conexion->rollBack();
-        return ["error"=>"Error en inserción: ".$e->getMessage()];
+        return ["error" => "Error en la BD: " . $e->getMessage()];
     }
 }

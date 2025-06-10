@@ -1,8 +1,12 @@
+<?php
+if (!isset($_SESSION["token"])) {
+    header("Location:/");
+}
+?>
 <!DOCTYPE html>
 <html lang="en">
 <body>
     <main class="add_house">
-        <div class="header-dummy"></div>
         <div class="info">
             <span>
                 <svg width="268" height="47" viewBox="0 0 268 67" fill="none" xmlns="http://www.w3.org/2000/svg">

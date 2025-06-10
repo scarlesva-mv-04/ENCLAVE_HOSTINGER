@@ -12,6 +12,7 @@ define("USUARIO_BD", "u598697057_enclave");
 define("CLAVE_BD", "Enclave2025");
 define("NOMBRE_BD", "u598697057_enclave");
 
+
 function validateToken()
 {
 
@@ -401,91 +402,5 @@ function obtener_modulos_confort_por_propiedad($id_propiedad)
         return $modulos;
     } catch (PDOException $e) {
         return ["error" => "Error en la consulta: " . $e->getMessage()];
-    }
-}
-
-function obtener_modulos_seguridad_por_propiedad($id_propiedad)
-{
-    try {
-        $conexion = new PDO("mysql:host=" . SERVIDOR_BD . ";dbname=" . NOMBRE_BD, USUARIO_BD, CLAVE_BD, array(PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES 'utf8'"));
-        $conexion->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-    } catch (PDOException $e) {
-        return ["error" => "No se pudo conectar a la base de datos: " . $e->getMessage()];
-    }
-
-    try {
-        $consulta = "SELECT 
-                        m.id AS id_modulo,
-                        m.nombre_modulo,
-                        cm.nombre_categoria
-                    FROM modulos m
-                    JOIN categoria_modulos cm ON cm.id = m.id_categoria
-                    JOIN sistemas_enclave se ON se.id = m.id_sist_enclave
-                    WHERE m.tipo = 'seguridad' AND se.id_propiedad = ?
-                    ORDER BY cm.nombre_categoria, m.nombre_modulo";
-
-        $sentencia = $conexion->prepare($consulta);
-        $sentencia->execute([$id_propiedad]);
-        $datos = $sentencia->fetchAll(PDO::FETCH_ASSOC);
-
-        $modulos = ["seguridad" => []];
-        foreach ($datos as $mod) {
-            $cat = $mod["nombre_categoria"];
-            if (!isset($modulos["seguridad"][$cat])) {
-                $modulos["seguridad"][$cat] = [];
-            }
-            $modulos["seguridad"][$cat][] = $mod;
-        }
-
-        return $modulos;
-    } catch (PDOException $e) {
-        return ["error" => "Error en la consulta: " . $e->getMessage()];
-    }
-}
-
-function agregar_usuario_propiedad($id_propiedad, $data)
-{
-    try {
-        $conexion = new PDO(
-            "mysql:host=".SERVIDOR_BD.";dbname=".NOMBRE_BD,
-            USUARIO_BD,
-            CLAVE_BD,
-            [PDO::MYSQL_ATTR_INIT_COMMAND=>"SET NAMES 'utf8'"]
-        );
-        $conexion->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-    } catch (PDOException $e) {
-        return ["error"=>"No se pudo conectar: ".$e->getMessage()];
-    }
-
-    try {
-        $conexion->beginTransaction();
-
-        $hash = password_hash($data["clave"], PASSWORD_BCRYPT);
-
-        $sql = "INSERT INTO clientes
-            (nombre,apellidos,dni,genero,usuario,clave,`tipo`)
-            VALUES (?,?,?,?,?,?,?)";
-        $stmt = $conexion->prepare($sql);
-        $stmt->execute([
-            $data["nombre"],
-            $data["apellidos"],
-            $data["dni"],
-            $data["genero"],
-            $data["usuario"],
-            $hash,
-            $data["tipo"]
-        ]);
-        $id_nuevo = $conexion->lastInsertId();
-
-        $sql2 = "INSERT INTO propiedad_cliente (id_cliente,id_propiedad) VALUES (?,?)";
-        $stmt2 = $conexion->prepare($sql2);
-        $stmt2->execute([$id_nuevo, $id_propiedad]);
-
-        $conexion->commit();
-
-        return ["success"=>true,"message"=>"Usuario agregado","id_usuario"=>(int)$id_nuevo];
-    } catch (PDOException $e) {
-        $conexion->rollBack();
-        return ["error"=>"Error en inserción: ".$e->getMessage()];
     }
 }

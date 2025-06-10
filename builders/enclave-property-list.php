@@ -1,7 +1,8 @@
 <?php
 
-if(!isset($_SESSION["token"])){
+if (!isset($_SESSION["token"])) {
     header("Location:/");
+    exit;
 }
 
 $headers[] = "Authorization: Bearer " . $_SESSION["token"];
@@ -10,14 +11,16 @@ $url = DIR_SERV . "/properties/" . $_SESSION["user_id"];
 $respuesta = consumir_servicios_JWT_REST($url, "GET", $headers);
 $json_respuesta = json_decode($respuesta, true);
 
-if (!$json_respuesta) {
+if (!is_array($json_respuesta)) {
     session_destroy();
-    die(error_page("Gestión Libros", "<h1>ENCLAVE</h1><p>Error consumiendo el servicio REST: <strong>$url</strong></p>"));
+    header("Location:/");
+    exit;
 }
 
 if (isset($json_respuesta["error"])) {
     session_destroy();
-    die(error_page("Gestión Libros", "<h1>ENCLAVE</h1><p>" . $json_respuesta["error"] . "</p>"));
+    header("Location:/");
+    exit;
 }
 
 if (isset($json_respuesta["no_auth"])) {
@@ -33,20 +36,23 @@ if (isset($json_respuesta["mensaje_baneo"])) {
     header("Location:index.php");
     exit;
 }
+
+if (!isset($json_respuesta["propiedades"]) || count($json_respuesta["propiedades"]) <= 0) {
+    session_destroy();
+    header("Location:/");
+    exit;
+}
 ?>
+
 <?php
 foreach ($json_respuesta["propiedades"] as $propiedad) {
     $nombre = htmlspecialchars($propiedad["nombre_propiedad"]);
     $zona = htmlspecialchars($propiedad["area_name"]);
     $img_portada = htmlspecialchars($propiedad["img_portada"]);
-
-    // Estados dinámicos
     $horus_estado = htmlspecialchars($propiedad["horus_estado"]);
     $enclave_estado = htmlspecialchars($propiedad["enclave_estado"]);
-
-    // Rutas de iconos dinámicas
-    $horus_icono = "../images/icons/horus-{$horus_estado}.svg";
-    $enclave_icono = "../images/icons/enclave-{$enclave_estado}.svg";
+    $horus_icono = "../images/estados/{$horus_estado}.svg";
+    $enclave_icono = "../images/estados/{$enclave_estado}.svg";
 ?>
     <div class="tarjeta-propiedad" onclick="window.location.href = '/property?id=<?= $propiedad["id"] ?>'">
         <div class="imagen-property lazy-bg" data-bg="../images/photos/<?= $img_portada ?>">

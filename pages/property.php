@@ -43,7 +43,6 @@ if (isset($json_respuesta["mensaje_baneo"])) {
 }
 
 $propiedad = $json_respuesta["propiedad"];
-$_SESSION["propiedad_id"] = $propiedad["id"];
 $estado_horus   = $propiedad["horus_estado"];
 $estado_enclave = $propiedad["enclave_estado"];
 ?>
@@ -92,11 +91,15 @@ $estado_enclave = $propiedad["enclave_estado"];
     <!-- ******************* CONTROL DEL HOGAR ******************* -->
 
     <?php
-    function icono_segun_categoria($cat) {
+    function icono_segun_categoria($cat)
+    {
         $mapa = [
             'iluminacion_rgb' => 'bulb',
-            'climatizacion'   => 'fan',
-            'temperatura_agua'=> 'thermometer'
+            'climatizacion'   => 'unknown_err',
+            'temperatura_agua' => 'unknown_err',
+            'camara'          => 'unknown_err',
+            'cerradura'       => 'unknown_err',
+            'sensor_movimiento' => 'unknown_err',
         ];
         return $mapa[$cat] ?? 'default';
     }
@@ -108,6 +111,7 @@ $estado_enclave = $propiedad["enclave_estado"];
     $url = DIR_SERV . "/property/" . $id_propiedad . "/modules/confort";
     $respuesta = consumir_servicios_JWT_REST($url, "GET", $headers);
     $json_confort = json_decode($respuesta, true);
+
 
     if (!$json_confort) {
         session_destroy();
@@ -154,62 +158,59 @@ $estado_enclave = $propiedad["enclave_estado"];
         <h2>Control del Hogar</h2>
 
         <?php if (!empty($modulos_confort)): ?>
-        <div class="confort-modules">
-            <h3 class="txt-botones resaltar">Confort</h3>
-            <?php foreach ($modulos_confort as $subcategoria => $lista_modulos): ?>
-                <div class="module-category">
-                    <h4 class="text resaltar"><?= ucfirst(str_replace('_', ' ', $subcategoria)) ?></h4>
-                    <div class="modules-wrapper">
-                        <?php foreach ($lista_modulos as $mod): ?>
-                            <div class="module">
-                                <div class="module-icon">
-                                    <img src="images/icons/<?= icono_segun_categoria($subcategoria) ?>.svg" alt="<?= htmlspecialchars($mod["nombre_modulo"]) ?>">
+            <div class="confort-modules">
+                <h3 class="txt-botones resaltar">Confort</h3>
+                <?php foreach ($modulos_confort as $subcategoria => $lista_modulos): ?>
+                    <div class="module-category">
+                        <h4 class="text resaltar"><?= ucfirst(str_replace('_', ' ', $subcategoria)) ?></h4>
+                        <div class="modules-wrapper">
+                            <?php foreach ($lista_modulos as $mod): ?>
+                                <div class="module" onclick="location.href='/modulo?id=<?= $mod["id_modulo"] ?>';"
+                                    <div class="module-icon">
+                                        <img src="images/icons/<?= icono_segun_categoria($subcategoria) ?>.svg" alt="<?= htmlspecialchars($mod["nombre_modulo"]) ?>">
+                                    </div>
+                                    <div class="module-text">
+                                        <p class="subtitles"><?= htmlspecialchars($mod["nombre_modulo"]) ?></p>
+                                    </div>
                                 </div>
-                                <div class="module-text">
-                                    <p class="subtitles"><?= htmlspecialchars($mod["nombre_modulo"]) ?></p>
-                                </div>
-                            </div>
-                        <?php endforeach; ?>
+                            <?php endforeach; ?>
+                        </div>
                     </div>
-                </div>
-            <?php endforeach; ?>
-        </div>
+                <?php endforeach; ?>
+            </div>
         <?php endif; ?>
 
         <?php if (!empty($modulos_seguridad)): ?>
-        <div class="security-modules">
-            <h3 class="txt-botones resaltar">Seguridad</h3>
-            <?php foreach ($modulos_seguridad as $subcategoria => $lista_modulos): ?>
-                <div class="module-category">
-                    <h4 class="text resaltar"><?= ucfirst(str_replace('_', ' ', $subcategoria)) ?></h4>
-                    <div class="modules-wrapper">
-                        <?php foreach ($lista_modulos as $mod): ?>
-                            <div class="module">
-                                <div class="module-icon">
-                                    <img src="images/icons/<?= icono_segun_categoria($subcategoria) ?>.svg" alt="<?= htmlspecialchars($mod["nombre_modulo"]) ?>">
+            <div class="security-modules">
+                <h3 class="txt-botones resaltar">Seguridad</h3>
+                <?php foreach ($modulos_seguridad as $subcategoria => $lista_modulos): ?>
+                    <div class="module-category">
+                        <h4 class="text resaltar"><?= ucfirst(str_replace('_', ' ', $subcategoria)) ?></h4>
+                        <div class="modules-wrapper">
+                            <?php foreach ($lista_modulos as $mod): ?>
+                                <div class="module">
+                                    <div class="module-icon">
+                                        <img src="images/icons/<?= icono_segun_categoria($subcategoria) ?>.svg" alt="<?= htmlspecialchars($mod["nombre_modulo"]) ?>">
+                                    </div>
+                                    <div class="module-text">
+                                        <p class="subtitles"><?= htmlspecialchars($mod["nombre_modulo"]) ?></p>
+                                    </div>
                                 </div>
-                                <div class="module-text">
-                                    <p class="subtitles"><?= htmlspecialchars($mod["nombre_modulo"]) ?></p>
-                                </div>
-                            </div>
-                        <?php endforeach; ?>
+                            <?php endforeach; ?>
+                        </div>
                     </div>
-                </div>
-            <?php endforeach; ?>
-        </div>
+                <?php endforeach; ?>
+            </div>
         <?php endif; ?>
     </section>
 
     <!-- ******************* FUNCIONES USUARIO ADMINISTRADOR ******************* -->
-    <section class="admin-functions">
-        <h2>Configuración adicional del hogar</h2>
-        <div class="aditional-option-wrapper" onclick="window.location.href = '/add_user'">
-            <div class="option-icon">
-                <img src="../images/icons/house_add.svg" alt="Añadir usuario">
-            </div>
-            <div class="option-text">
-                <p class="txt-botones resaltar">Añadir usuario al hogar</p>
-            </div>
-        </div>
-    </section>
+
+
+    <form id="moduloForm" action="/modulo" method="post" style="display: none;">
+        <input type="hidden" name="modulo_id" id="modulo_id">
+    </form>
+
+
+
 </main>

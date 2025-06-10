@@ -117,7 +117,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
     <section id="cita">
         <h2 class="subtitles cita-h2-title">Introduce tus datos</h2>
-        <form method="post">
+        <form id="cita" method="post">
             <div class="cita-name-surname">
                 <div class="cita-input">
                     <span class="txt-input">Nombre</span>

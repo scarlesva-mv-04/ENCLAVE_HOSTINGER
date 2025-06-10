@@ -1,10 +1,12 @@
-<IfModule mod_rewrite.c>
-    RewriteEngine On
+# Do not remove this line or mod_rewrite rules and search engine friendly URLs will stop working
+#RewriteBase /
+RewriteEngine On
+
+# Some hosts may require you to use the `RewriteBase` directive.
+# If you need to use the `RewriteBase` directive, it should be the
+# absolute physical path to the directory that contains this htaccess file.
+#
 
 
-    RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
-
-
-    RewriteCond %{REQUEST_FILENAME} !-f
-    RewriteRule ^ index.php [QSA,L]
-</IfModule>
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteRule ^ index.php [QSA,L]

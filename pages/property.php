@@ -136,13 +136,13 @@ $respuesta = consumir_servicios_JWT_REST($url, "GET", $headers);
 $json_respuesta = json_decode($respuesta, true);
 
 if (!$json_respuesta) {
-    session_destroy();
-    die(error_page("ENCLAVE", "<h1>ENCLAVE</h1><p>Error consumiendo el servicio REST.</p>"));
+
+var_dump($_SESSION);
 }
 
 if (isset($json_respuesta["error"])) {
-    session_destroy();
-    die(error_page("ENCLAVE", "<h1>ENCLAVE</h1><p>" . $json_respuesta["error"] . "</p>"));
+
+
 }
 
 if (isset($json_respuesta["no_auth"])) {

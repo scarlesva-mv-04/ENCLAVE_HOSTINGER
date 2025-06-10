@@ -369,7 +369,6 @@ function obtener_modulos_confort_por_propiedad($id_propiedad)
 {
     try {
         $conexion = new PDO("mysql:host=" . SERVIDOR_BD . ";dbname=" . NOMBRE_BD, USUARIO_BD, CLAVE_BD, array(PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES 'utf8'"));
-        $conexion->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
     } catch (PDOException $e) {
         return ["error" => "No se pudo conectar a la base de datos: " . $e->getMessage()];
     }
@@ -408,7 +407,6 @@ function obtener_modulos_seguridad_por_propiedad($id_propiedad)
 {
     try {
         $conexion = new PDO("mysql:host=" . SERVIDOR_BD . ";dbname=" . NOMBRE_BD, USUARIO_BD, CLAVE_BD, array(PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES 'utf8'"));
-        $conexion->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
     } catch (PDOException $e) {
         return ["error" => "No se pudo conectar a la base de datos: " . $e->getMessage()];
     }
@@ -452,7 +450,6 @@ function agregar_usuario_propiedad($id_propiedad, $data)
             CLAVE_BD,
             [PDO::MYSQL_ATTR_INIT_COMMAND=>"SET NAMES 'utf8'"]
         );
-        $conexion->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
     } catch (PDOException $e) {
         return ["error"=>"No se pudo conectar: ".$e->getMessage()];
     }

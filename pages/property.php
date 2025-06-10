@@ -109,14 +109,14 @@ $url = DIR_SERV . "/property/" . $id_propiedad . "/modules/confort";
 $respuesta = consumir_servicios_JWT_REST($url, "GET", $headers);
 $json_respuesta = json_decode($respuesta, true);
 
+var_dump($json_respuesta);
+
 if (!$json_respuesta) {
-    session_destroy();
-    die(error_page("ENCLAVE", "<h1>ENCLAVE</h1><p>Error consumiendo el servicio REST.</p>"));
+    print_r("vacio");
 }
 
 if (isset($json_respuesta["error"])) {
-    session_destroy();
-    die(error_page("ENCLAVE", "<h1>ENCLAVE</h1><p>" . $json_respuesta["error"] . "</p>"));
+    print_r("error");
 }
 
 if (isset($json_respuesta["no_auth"])) {

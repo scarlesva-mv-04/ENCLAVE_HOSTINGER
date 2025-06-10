@@ -1,0 +1,6 @@
+RewriteEngine On
+
+# Redirige todo lo que no sea archivo o carpeta real a index.php
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^ index.php [QSA,L]

@@ -1,5 +1,6 @@
 /* PARA CONEXIONES A LA API */
-const API_BASE = "http://www.enclave.com/ENCLAVE_API";
+const API_BASE = "https://lightseagreen-swallow-488848.hostingersite.com/ENCLAVE_API";
+
 
 /*----------------------------    FUNCION CAMBIAR HEADER    --------------------------*/
 
